@@ -1,0 +1,268 @@
+:root {
+  --bg: #15181d;
+  --panel: #20252c;
+  --panel-2: #171b21;
+  --line: #343b46;
+  --text: #f4f7fb;
+  --muted: #aeb8c5;
+  --accent: #42f5c8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+
+.settings {
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.panel {
+  width: min(980px, 100%);
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.header,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.group {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.color-field {
+  grid-template-columns: 1fr 54px;
+  align-items: center;
+}
+
+input,
+select,
+button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0 12px;
+  background: #12151a;
+  color: var(--text);
+}
+
+input[type="color"] {
+  height: 42px;
+  padding: 4px;
+}
+
+input[type="range"] {
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+output {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.check {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.check input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--accent);
+}
+
+.preview-card {
+  --preview-font: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --preview-size: 58px;
+  --preview-accent: #42f5c8;
+  --preview-pending: rgba(255, 255, 255, 0.5);
+  --preview-dim: rgba(255, 255, 255, 0.58);
+  --preview-meta: rgba(255, 255, 255, 0.78);
+  --preview-shadow: 0 3px 14px rgba(0, 0, 0, 0.72);
+  --preview-current-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
+  --preview-align: center;
+  display: grid;
+  gap: 10px;
+  min-height: 250px;
+  padding: 24px;
+  overflow: hidden;
+  background: #080a0d;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--preview-font);
+  text-align: var(--preview-align);
+}
+
+.preview-meta {
+  color: var(--preview-meta);
+  font-size: clamp(18px, calc(var(--preview-size) * 0.34), 26px);
+  font-weight: 700;
+  text-shadow: var(--preview-shadow);
+}
+
+.preview-meta.hide {
+  display: none;
+}
+
+.preview-lines {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+}
+
+.preview-side {
+  color: var(--preview-dim);
+  font-size: clamp(20px, calc(var(--preview-size) * 0.48), 34px);
+  font-weight: 700;
+  text-shadow: var(--preview-shadow);
+}
+
+.preview-current {
+  color: white;
+  font-size: var(--preview-size);
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.preview-sweep {
+  --line-progress: 46%;
+  display: inline-grid;
+  max-width: 100%;
+  position: relative;
+  vertical-align: top;
+}
+
+.preview-text {
+  grid-area: 1 / 1;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.preview-pending {
+  color: var(--preview-pending);
+  text-shadow: var(--preview-current-shadow);
+  -webkit-text-stroke: 0.015em rgba(0, 0, 0, 0.28);
+  paint-order: stroke fill;
+}
+
+.preview-done {
+  color: var(--preview-accent);
+  clip-path: inset(0 calc(100% - var(--line-progress)) 0 0);
+  text-shadow: var(--preview-current-shadow);
+}
+
+button,
+a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 6px;
+  color: #07110e;
+  background: var(--accent);
+  border: 0;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#resetButton {
+  background: #d8dee7;
+}
+
+.danger {
+  color: #fff7f7;
+  background: #d94848;
+}
+
+.danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.status {
+  min-height: 20px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .settings {
+    padding: 14px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+  }
+}

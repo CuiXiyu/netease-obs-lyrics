@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lyrics Settings</title>
+    <link rel="stylesheet" href="/settings.css">
+  </head>
+  <body>
+    <main class="settings">
+      <section class="panel">
+        <div class="header">
+          <h1>歌词外观</h1>
+          <a href="/" target="_blank" rel="noreferrer">打开预览</a>
+        </div>
+
+        <section class="group">
+          <h2>字体</h2>
+          <div class="field">
+            <label for="fontSearch">搜索字体</label>
+            <input id="fontSearch" type="search" autocomplete="off" placeholder="输入字体名">
+          </div>
+          <div class="field">
+            <label for="fontSelect">字体</label>
+            <select id="fontSelect"></select>
+          </div>
+          <div class="split">
+            <label class="field">
+              <span>字号</span>
+              <input id="fontSize" type="range" min="24" max="96" step="1">
+              <output id="fontSizeValue"></output>
+            </label>
+            <label class="field">
+              <span>对齐</span>
+              <select id="align">
+                <option value="center">居中</option>
+                <option value="left">左对齐</option>
+                <option value="right">右对齐</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2>颜色</h2>
+          <div class="split">
+            <label class="field color-field">
+              <span>扫色高亮</span>
+              <input id="accentColor" type="color">
+            </label>
+            <label class="field color-field">
+              <span>未扫色文字</span>
+              <input id="pendingColor" type="color">
+            </label>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2>透明度</h2>
+          <div class="split">
+            <label class="field">
+              <span>未扫色</span>
+              <input id="pendingOpacity" type="range" min="0" max="1" step="0.01">
+              <output id="pendingOpacityValue"></output>
+            </label>
+            <label class="field">
+              <span>上下句</span>
+              <input id="dimOpacity" type="range" min="0" max="1" step="0.01">
+              <output id="dimOpacityValue"></output>
+            </label>
+          </div>
+          <div class="split">
+            <label class="field">
+              <span>歌名信息</span>
+              <input id="metaOpacity" type="range" min="0" max="1" step="0.01">
+              <output id="metaOpacityValue"></output>
+            </label>
+            <label class="field">
+              <span>阴影强度</span>
+              <input id="shadowOpacity" type="range" min="0" max="1" step="0.01">
+              <output id="shadowOpacityValue"></output>
+            </label>
+          </div>
+          <label class="check">
+            <input id="showMeta" type="checkbox">
+            <span>显示歌名和歌手</span>
+          </label>
+        </section>
+
+        <section class="preview-card" id="previewCard">
+          <div class="preview-meta" id="previewMeta">歌曲名 / 歌手</div>
+          <div class="preview-lines">
+            <div class="preview-side" id="previewPrevious">上一句歌词</div>
+            <div class="preview-current">
+              <span class="preview-sweep" id="previewSweep">
+                <span class="preview-text preview-pending" id="previewPending">此行歌词用于预览扫色效果</span>
+                <span class="preview-text preview-done" id="previewDone">此行歌词用于预览扫色效果</span>
+              </span>
+            </div>
+            <div class="preview-side" id="previewNext">下一句歌词</div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button id="saveButton" type="button">保存</button>
+          <button id="resetButton" type="button">恢复默认</button>
+          <button id="shutdownButton" class="danger" type="button">关闭 OBS 歌词服务</button>
+        </div>
+        <p class="status" id="status"></p>
+      </section>
+    </main>
+    <script src="/settings.js"></script>
+  </body>
+</html>

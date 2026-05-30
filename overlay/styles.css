@@ -1,0 +1,145 @@
+:root {
+  --font-size: 58px;
+  --accent: #42f5c8;
+  --pending: rgba(255, 255, 255, 0.5);
+  --dim: rgba(255, 255, 255, 0.58);
+  --meta: rgba(255, 255, 255, 0.78);
+  --shadow: 0 3px 14px rgba(0, 0, 0, 0.72);
+  --current-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
+  --align: center;
+  --font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  font-family: var(--font-family);
+  color: white;
+}
+
+.overlay {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 56px;
+  text-align: var(--align);
+}
+
+.meta {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  color: var(--meta);
+  font-size: clamp(18px, calc(var(--font-size) * 0.34), 26px);
+  line-height: 1.25;
+  text-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+.song {
+  font-weight: 700;
+}
+
+.artist {
+  opacity: 0.82;
+}
+
+.lyrics {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+}
+
+.line {
+  min-height: 1.28em;
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-shadow: var(--shadow);
+}
+
+.line.current {
+  --line-progress: 0%;
+  --line-progress-px: 0px;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--current-font-size, var(--font-size));
+  font-weight: 800;
+  line-height: 1.24;
+  text-shadow: none;
+}
+
+.line.previous,
+.line.next {
+  color: var(--dim);
+  font-size: clamp(20px, calc(var(--font-size) * 0.48), 34px);
+  line-height: 1.2;
+  opacity: 0.78;
+}
+
+.sweep {
+  --line-progress: 0%;
+  display: inline-block;
+  max-width: 100%;
+  position: relative;
+  vertical-align: top;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.sweep-text {
+  display: block;
+  min-width: 0;
+  white-space: inherit;
+  word-break: inherit;
+  overflow-wrap: inherit;
+}
+
+.sweep-pending {
+  color: var(--pending);
+  text-shadow: var(--current-shadow);
+  -webkit-text-stroke: 0.015em rgba(0, 0, 0, 0.28);
+  paint-order: stroke fill;
+}
+
+.sweep-done-mask {
+  position: absolute;
+  inset: 0;
+  width: var(--line-progress-px);
+  overflow: hidden;
+  pointer-events: none;
+  will-change: width;
+}
+
+.sweep-done {
+  width: max-content;
+  color: var(--accent);
+  text-shadow: var(--current-shadow);
+}
+
+.status {
+  min-height: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  text-shadow: var(--shadow);
+}
+
+.hide {
+  display: none;
+}

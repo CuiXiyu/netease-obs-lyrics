@@ -1,0 +1,17 @@
+{
+  "manifest_version": 1,
+  "name": "NetEase OBS Lyrics Bridge",
+  "slug": "netease-obs-lyrics-bridge",
+  "version": "0.1.0",
+  "author": "Codex",
+  "description": "Reports real NetEase Cloud Music playback progress to the local OBS lyrics overlay service.",
+  "betterncm_version": ">=1.0.0",
+  "ncm3-compatible": true,
+  "injects": {
+    "Main": [
+      {
+        "file": "./main.js"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+.runtime/
+
+# Runtime state
+logs/
+.logs/
+*.log
+settings.json
+
+# Build and release artifacts
+dist/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
