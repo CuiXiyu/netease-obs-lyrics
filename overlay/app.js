@@ -19,6 +19,14 @@ const config = {
   rhythm: params.get("rhythm") || ""
 };
 
+const text = {
+  waitingSong: "等待播放",
+  waitingArtist: "网易云音乐",
+  waitingPlayback: "等待网易云音乐播放",
+  noReliableProgress: "已检测到歌曲，但暂时没有可靠播放进度",
+  noReliableProgressHelp: "请确认网易云音乐、BetterNCM 和桥接插件已正常启用"
+};
+
 let state = null;
 let receivedAt = Date.now();
 let lastRenderedLineKey = "";
@@ -322,6 +330,21 @@ function fallbackWords(line, rhythmMode) {
 }
 
 function sweepSegments(line, mode, rhythmMode) {
+  if (mode !== "word") {
+    const totalUnits = textUnits(line.text);
+    return {
+      lineStartMs: Number(line.startMs || 0),
+      lineEndMs: Number(line.endMs || line.startMs || 0),
+      totalUnits,
+      segments: [{
+        startMs: Number(line.startMs || 0),
+        endMs: Number(line.startMs || 0) + 1,
+        fromUnits: 0,
+        toUnits: totalUnits
+      }]
+    };
+  }
+
   const words = mode === "word" && Array.isArray(line.words) && line.words.length
     ? line.words
     : fallbackWords(line, rhythmMode);
@@ -354,7 +377,7 @@ function renderCurrent(line, mode) {
   currentSweep = null;
   if (!line) {
     currentLine.style.removeProperty("--current-font-size");
-    currentLine.textContent = state?.lyric?.message || "Waiting for NetEase Cloud Music";
+    currentLine.textContent = state?.lyric?.message || text.waitingPlayback;
     return;
   }
 
@@ -381,6 +404,7 @@ function renderCurrent(line, mode) {
     pending,
     doneMask,
     done,
+    mode,
     ...sweepSegments(line, mode, config.rhythm || state?.settings?.rhythmMode || "natural")
   };
   fitCurrentLine();
@@ -435,15 +459,15 @@ function updateCurrentProgress(positionMs) {
 }
 
 function renderNoReliableProgress(media, lyric) {
-  song.textContent = media.title || lyric.songName || "Waiting";
-  artist.textContent = media.artist || lyric.artistName || "NetEase Cloud Music";
+  song.textContent = media.title || lyric.songName || text.waitingSong;
+  artist.textContent = media.artist || lyric.artistName || text.waitingArtist;
   previousLine.textContent = "";
   currentLine.textContent = media.title
-    ? "Song detected, but no real playback progress is available"
-    : "Waiting for NetEase Cloud Music";
+    ? text.noReliableProgress
+    : text.waitingPlayback;
   nextLine.textContent = "";
   currentSweep = null;
-  statusEl.textContent = state.error || "Install and enable the BetterNCM bridge plugin for real progress";
+  statusEl.textContent = state.error || text.noReliableProgressHelp;
 }
 
 function renderFrame() {
@@ -479,8 +503,8 @@ function renderFrame() {
   updateCurrentProgress(position);
 
   if (second !== lastRenderedSecond) {
-    song.textContent = media.title || lyric.songName || "Waiting";
-    artist.textContent = media.artist || lyric.artistName || "NetEase Cloud Music";
+    song.textContent = media.title || lyric.songName || text.waitingSong;
+    artist.textContent = media.artist || lyric.artistName || text.waitingArtist;
     statusEl.textContent = state.error || lyric.message || "";
     lastRenderedSecond = second;
   }

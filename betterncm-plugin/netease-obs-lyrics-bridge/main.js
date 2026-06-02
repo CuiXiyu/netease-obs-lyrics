@@ -511,7 +511,7 @@
   function start() {
     setInterval(tick, intervalMs);
     tick();
-    console.log("[NetEase OBS Lyrics Bridge] started");
+    console.log("[网易云 OBS 歌词桥接] 已启动");
   }
 
   if (window.plugin && typeof window.plugin.onLoad === "function") {

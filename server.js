@@ -34,7 +34,7 @@ const state = {
     artistName: "",
     lines: [],
     mode: "none",
-    message: "Waiting for NetEase Cloud Music"
+    message: "等待网易云音乐播放"
   },
   bridge: {
     status: "waiting",
@@ -349,7 +349,7 @@ function readJsonBody(req, limitBytes = 1024 * 1024) {
     req.on("data", (chunk) => {
       body += chunk;
       if (body.length > limitBytes) {
-        reject(new Error("Request body too large"));
+        reject(new Error("请求内容过大"));
         req.destroy();
       }
     });
@@ -429,7 +429,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (requestUrl.pathname === "/api/shutdown" && req.method === "POST") {
-    sendJson(res, 200, { ok: true, message: "NetEase OBS Lyrics service is shutting down" });
+    sendJson(res, 200, { ok: true, message: "网易云 OBS 歌词服务正在关闭" });
     shutdownService();
     return;
   }
@@ -440,14 +440,14 @@ const server = http.createServer((req, res) => {
 
   if (!absolutePath.startsWith(overlayDir)) {
     res.writeHead(403, corsHeaders());
-    res.end("Forbidden");
+    res.end("禁止访问");
     return;
   }
 
   fs.readFile(absolutePath, (err, data) => {
     if (err) {
       res.writeHead(404, corsHeaders());
-      res.end("Not found");
+      res.end("未找到");
       return;
     }
 
@@ -734,14 +734,14 @@ async function loadLyricsFor(media) {
     artistName: media.artist || "",
     lines: [],
     mode: "none",
-    message: "Loading lyrics"
+    message: "正在加载歌词"
   };
   state.updatedAt = Date.now();
   broadcast();
 
   try {
     const song = songFromBridge(media) || await searchSong(media);
-    if (!song) throw new Error("No matching song found");
+    if (!song) throw new Error("没有找到匹配歌曲");
 
     const lyricData = await fetchLyric(song.id);
     const yrcLines = parseYrc(lyricData?.yrc?.lyric || lyricData?.yrc?.lyricContent || "");
@@ -749,7 +749,7 @@ async function loadLyricsFor(media) {
     const baseLines = yrcLines.length ? yrcLines : lrcLines;
 
     if (!baseLines.length) {
-      throw new Error("Song matched, but no usable lyrics were found");
+      throw new Error("已匹配到歌曲，但没有可用歌词");
     }
 
     const lyric = {
@@ -760,7 +760,7 @@ async function loadLyricsFor(media) {
       artistName: artistsOf(song) || media.artist || "",
       lines: withFallbackWords(baseLines),
       mode: yrcLines.length ? "word" : "line-fallback",
-      message: yrcLines.length ? "Word-level lyrics" : "LRC line lyrics with per-character fallback"
+      message: yrcLines.length ? "逐字歌词" : "逐句歌词"
     };
 
     lyricCache.set(key, lyric);
@@ -867,7 +867,7 @@ function shouldKeepReliableBridgeState(payload) {
 function handleBridgeState(payload) {
   const positionMs = Number(payload.positionMs);
   if (!Number.isFinite(positionMs) || positionMs < 0) {
-    return { ok: false, error: "Invalid positionMs" };
+    return { ok: false, error: "positionMs 无效" };
   }
 
   const payloadTitle = String(payload.title || "").trim();
@@ -1032,7 +1032,7 @@ function startMediaProbe() {
       windowsHide: true
     });
   } catch (error) {
-    state.error = `media-session helper could not start: ${error.message}`;
+    state.error = `媒体会话助手无法启动：${error.message}`;
     state.updatedAt = Date.now();
     broadcast();
     setTimeout(startMediaProbe, 8000);
@@ -1042,7 +1042,7 @@ function startMediaProbe() {
   readline.createInterface({ input: child.stdout }).on("line", handleMediaLine);
 
   child.on("error", (error) => {
-    state.error = `media-session helper error: ${error.message}`;
+    state.error = `媒体会话助手错误：${error.message}`;
     state.updatedAt = Date.now();
     broadcast();
   });
@@ -1054,7 +1054,7 @@ function startMediaProbe() {
   });
 
   child.on("exit", (code) => {
-    state.error = `media-session helper exited (${code}); restarting`;
+    state.error = `媒体会话助手已退出（${code}），正在重启`;
     state.updatedAt = Date.now();
     broadcast();
     setTimeout(startMediaProbe, 2000);
@@ -1062,7 +1062,7 @@ function startMediaProbe() {
 }
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`NetEase OBS Lyrics is running: http://127.0.0.1:${port}`);
-  console.log("Add this URL as an OBS Browser Source.");
+  console.log(`网易云 OBS 歌词服务正在运行：http://127.0.0.1:${port}`);
+  console.log("请把这个地址添加为 OBS 浏览器源。");
   startMediaProbe();
 });

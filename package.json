@@ -1,6 +1,6 @@
 {
   "name": "netease-obs-lyrics",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "OBS browser-source lyric overlay for NetEase Cloud Music on Windows.",
   "main": "server.js",

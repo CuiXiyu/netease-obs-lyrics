@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lyrics Settings</title>
+    <title>歌词设置</title>
     <link rel="stylesheet" href="/settings.css">
   </head>
   <body>
@@ -18,7 +18,7 @@
           <h2>字体</h2>
           <div class="field">
             <label for="fontSearch">搜索字体</label>
-            <input id="fontSearch" type="search" autocomplete="off" placeholder="输入字体名">
+            <input id="fontSearch" type="search" autocomplete="off" placeholder="输入字体名称">
           </div>
           <div class="field">
             <label for="fontSelect">字体</label>
@@ -45,11 +45,11 @@
           <h2>颜色</h2>
           <div class="split">
             <label class="field color-field">
-              <span>扫色高亮</span>
+              <span>高亮颜色</span>
               <input id="accentColor" type="color">
             </label>
             <label class="field color-field">
-              <span>未扫色文字</span>
+              <span>未唱到文字</span>
               <input id="pendingColor" type="color">
             </label>
           </div>
@@ -59,7 +59,7 @@
           <h2>透明度</h2>
           <div class="split">
             <label class="field">
-              <span>未扫色</span>
+              <span>未唱到文字</span>
               <input id="pendingOpacity" type="range" min="0" max="1" step="0.01">
               <output id="pendingOpacityValue"></output>
             </label>
@@ -71,7 +71,7 @@
           </div>
           <div class="split">
             <label class="field">
-              <span>歌名信息</span>
+              <span>歌曲信息</span>
               <input id="metaOpacity" type="range" min="0" max="1" step="0.01">
               <output id="metaOpacityValue"></output>
             </label>
@@ -93,8 +93,8 @@
             <div class="preview-side" id="previewPrevious">上一句歌词</div>
             <div class="preview-current">
               <span class="preview-sweep" id="previewSweep">
-                <span class="preview-text preview-pending" id="previewPending">此行歌词用于预览扫色效果</span>
-                <span class="preview-text preview-done" id="previewDone">此行歌词用于预览扫色效果</span>
+                <span class="preview-text preview-pending" id="previewPending">此行歌词用于预览高亮效果</span>
+                <span class="preview-text preview-done" id="previewDone">此行歌词用于预览高亮效果</span>
               </span>
             </div>
             <div class="preview-side" id="previewNext">下一句歌词</div>

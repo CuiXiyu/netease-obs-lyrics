@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $distRoot = Join-Path $projectRoot "dist"
@@ -6,7 +6,7 @@ $releaseRoot = Join-Path $distRoot "netease-obs-lyrics"
 $packageJson = Get-Content -LiteralPath (Join-Path $projectRoot "package.json") -Raw | ConvertFrom-Json
 $version = [string]$packageJson.version
 if (-not $version) {
-    throw "package.json version is required."
+    throw "package.json 中必须提供版本号。"
 }
 $releaseZip = Join-Path $distRoot "netease-obs-lyrics-windows-v$version.zip"
 $latestZip = Join-Path $distRoot "netease-obs-lyrics-windows.zip"
@@ -61,6 +61,6 @@ if (Test-Path $betterNcmDll) {
 Compress-Archive -Path (Join-Path $releaseRoot "*") -DestinationPath $releaseZip -Force
 Copy-Item -LiteralPath $releaseZip -Destination $latestZip -Force
 
-Write-Host "Built release package:"
+Write-Host "发布包已构建："
 Write-Host $releaseZip
 Write-Host $latestZip

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$Foreground,
     [switch]$OpenPages
 )
@@ -98,7 +98,7 @@ if ($Foreground) {
 
 $logDir = Split-Path -Parent $logPath
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-"[$(Get-Date -Format o)] Starting NetEase OBS Lyrics service" | Out-File -LiteralPath $logPath -Encoding utf8 -Append
+"[$(Get-Date -Format o)] 正在启动网易云 OBS 歌词服务" | Out-File -LiteralPath $logPath -Encoding utf8
 "[$(Get-Date -Format o)] Node: $nodeExe" | Out-File -LiteralPath $logPath -Encoding utf8 -Append
 
 Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
@@ -106,9 +106,9 @@ $process = Start-OverlayService -WorkingDirectory $projectRoot
 
 if (-not (Wait-ServiceReady -Url $serviceUrl -Process $process)) {
     if ($process.HasExited) {
-        "[$(Get-Date -Format o)] Service exited with code $($process.ExitCode)" | Out-File -LiteralPath $logPath -Encoding utf8 -Append
+        "[$(Get-Date -Format o)] 服务已退出，退出码：$($process.ExitCode)" | Out-File -LiteralPath $logPath -Encoding utf8 -Append
     } else {
-        "[$(Get-Date -Format o)] Service did not become ready before timeout." | Out-File -LiteralPath $logPath -Encoding utf8 -Append
+        "[$(Get-Date -Format o)] 服务在超时时间内未就绪。" | Out-File -LiteralPath $logPath -Encoding utf8 -Append
     }
     if (Test-Path $stdoutPath) {
         Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue | Out-File -LiteralPath $logPath -Encoding utf8 -Append
@@ -117,9 +117,9 @@ if (-not (Wait-ServiceReady -Url $serviceUrl -Process $process)) {
         Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue | Out-File -LiteralPath $logPath -Encoding utf8 -Append
     }
 
-    Write-Output "NetEase OBS Lyrics service failed to start or did not become ready."
-    Write-Output "Try running: .\launch.ps1 -Foreground"
-    Write-Output "Service log: $logPath"
+    Write-Output "网易云 OBS 歌词服务启动失败或未就绪。"
+    Write-Output "可尝试运行：.\launch.ps1 -Foreground"
+    Write-Output "服务日志：$logPath"
     if (Test-Path $logPath) {
         Write-Output ""
         Get-Content -LiteralPath $logPath -Tail 40 -ErrorAction SilentlyContinue | Write-Output
@@ -127,11 +127,11 @@ if (-not (Wait-ServiceReady -Url $serviceUrl -Process $process)) {
     exit 4
 }
 
-Write-Output "NetEase OBS Lyrics service started. PID: $($process.Id)"
-Write-Output "OBS Browser Source URL: $serviceUrl"
-Write-Output "Test page: $serviceUrl/?status=1"
-Write-Output "Settings page: $serviceUrl/settings.html"
-Write-Output "Run .\health.ps1 to check bridge status."
+Write-Output "网易云 OBS 歌词服务已启动。PID：$($process.Id)"
+Write-Output "OBS 浏览器源地址：$serviceUrl"
+Write-Output "测试页面：$serviceUrl/?status=1"
+Write-Output "设置页面：$serviceUrl/settings.html"
+Write-Output "运行 .\health.ps1 可检查桥接状态。"
 
 if ($OpenPages) {
     Open-OverlayPages

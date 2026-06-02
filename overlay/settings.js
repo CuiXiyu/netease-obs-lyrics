@@ -237,5 +237,5 @@ controls.resetButton.addEventListener("click", () => save(defaults));
 controls.shutdownButton.addEventListener("click", shutdownService);
 
 load().catch((error) => {
-  setStatus(error.message);
+  setStatus(`加载失败：${error.message}`);
 });

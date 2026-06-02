@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$ProjectRoot = (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
 )
 
@@ -37,7 +37,7 @@ $release = $nodeIndex |
     Select-Object -First 1
 
 if (-not $release) {
-    throw "Could not find a suitable Node.js LTS release from $indexUrl"
+    throw "无法从 $indexUrl 找到合适的 Node.js LTS 版本"
 }
 
 $version = $release.version
@@ -46,7 +46,7 @@ $zipUrl = "https://nodejs.org/dist/$version/$zipName"
 $zipPath = Join-Path $vendorRoot $zipName
 $extractTemp = Join-Path $vendorRoot "node-extract"
 
-Write-Host "Downloading Node.js $version..."
+Write-Host "正在下载 Node.js $version..."
 Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
 
 Remove-Item -LiteralPath $extractTemp -Recurse -Force -ErrorAction SilentlyContinue
@@ -56,7 +56,7 @@ New-Item -ItemType Directory -Force -Path $extractTemp | Out-Null
 Expand-Archive -LiteralPath $zipPath -DestinationPath $extractTemp -Force
 $extracted = Get-ChildItem -LiteralPath $extractTemp -Directory | Select-Object -First 1
 if (-not $extracted) {
-    throw "Node.js archive did not contain an extracted folder"
+    throw "Node.js 压缩包中没有可用的解压目录"
 }
 
 Move-Item -LiteralPath $extracted.FullName -Destination $nodeRoot -Force
