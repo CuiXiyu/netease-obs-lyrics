@@ -829,6 +829,7 @@ function playbackStatusFromMotion(status, trackKeyValue, positionMs, capturedAt,
   if (payload?.paused === true && payload?.pausedReliable === true) return "Paused";
 
   if (normalizedStatus !== "Paused") {
+    if (payload?.paused === false && payload?.pausedReliable === true) return normalizedStatus;
     return stationarySince && capturedAt - stationarySince > 1600 ? "Paused" : normalizedStatus;
   }
 
@@ -836,6 +837,31 @@ function playbackStatusFromMotion(status, trackKeyValue, positionMs, capturedAt,
   if (!sameTrack) return normalizedStatus;
 
   return capturedDelta > 0 && positionDelta > 250 ? "Playing" : normalizedStatus;
+}
+
+function shouldKeepReliableBridgeState(payload) {
+  if (payload?.positionReliable !== false) return false;
+  if (state.media?.source !== "betterncm-bridge" || !state.media?.positionReliable) return false;
+
+  const payloadTitle = normalizedText(payload.title);
+  const mediaTitle = normalizedText(state.media.title);
+  const payloadArtist = normalizedText(payload.artist);
+  const mediaArtist = normalizedText(state.media.artist);
+  const sameTitle = payloadTitle && mediaTitle && (
+    payloadTitle === mediaTitle ||
+    payloadTitle.includes(mediaTitle) ||
+    mediaTitle.includes(payloadTitle)
+  );
+  const sameArtist = payloadArtist && mediaArtist && (
+    payloadArtist === mediaArtist ||
+    payloadArtist.includes(mediaArtist) ||
+    mediaArtist.includes(payloadArtist)
+  );
+  if (!sameTitle && !sameArtist) return false;
+
+  const bridgeHeartbeatFresh = Date.now() - bridgeHeartbeatLastSeen < 2500;
+  const bridgeProgressRecentlySeen = Date.now() - bridgeProgressLastSeen < 15000;
+  return bridgeHeartbeatFresh || bridgeProgressRecentlySeen;
 }
 
 function handleBridgeState(payload) {
@@ -957,6 +983,13 @@ function handleMediaLine(line) {
   }
 
   if (Date.now() - bridgeProgressLastSeen < 3000) {
+    return;
+  }
+
+  if (shouldKeepReliableBridgeState(payload)) {
+    state.error = "";
+    state.updatedAt = Date.now();
+    broadcast();
     return;
   }
 

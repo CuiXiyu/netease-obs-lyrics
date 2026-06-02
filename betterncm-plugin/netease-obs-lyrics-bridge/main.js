@@ -7,6 +7,8 @@
   let lastPayloadKey = "";
   let lastSendAt = 0;
   let lastHeartbeatAt = 0;
+  let lastNativeSnapshot = null;
+  let tickInFlight = false;
 
   function toMs(value) {
     const number = Number(value);
@@ -162,6 +164,142 @@
     return null;
   }
 
+  function collectObjects(value, depth = 0, output = []) {
+    if (!value || typeof value !== "object" || depth > 4) return output;
+    output.push(value);
+    for (const child of Object.values(value)) {
+      if (child && typeof child === "object") collectObjects(child, depth + 1, output);
+    }
+    return output;
+  }
+
+  function firstText(objects, keys) {
+    const wanted = new Set(keys.map((key) => key.toLowerCase()));
+    for (const object of objects) {
+      for (const [rawKey, rawValue] of Object.entries(object)) {
+        if (!wanted.has(String(rawKey).toLowerCase())) continue;
+        const text = String(rawValue || "").trim();
+        if (text) return text;
+      }
+    }
+    return "";
+  }
+
+  function firstNumber(objects, keys, durationMs = 0) {
+    const wanted = new Set(keys.map((key) => key.toLowerCase()));
+    for (const object of objects) {
+      for (const [rawKey, rawValue] of Object.entries(object)) {
+        const key = String(rawKey).toLowerCase();
+        if (!wanted.has(key)) continue;
+        const number = Number(rawValue);
+        if (!Number.isFinite(number) || number < 0) continue;
+        if (/progress/.test(key) && number > 0 && number <= 1) continue;
+
+        const ms = number > 10000 ? Math.round(number) : Math.round(number * 1000);
+        if (durationMs > 0 && ms > durationMs + 2000) continue;
+        return ms;
+      }
+    }
+    return 0;
+  }
+
+  function nativeArtists(objects) {
+    for (const object of objects) {
+      const value = object.artists || object.artist || object.ar;
+      if (Array.isArray(value)) {
+        const text = artistNames(value);
+        if (text) return text;
+      }
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+    return "";
+  }
+
+  function nativeSongId(objects) {
+    return firstText(objects, ["trackId", "resourceTrackId", "resourceId", "onlineResourceId", "id", "songId"]);
+  }
+
+  function normalizeNativeProgress(value, source) {
+    const objects = collectObjects(value);
+    if (!objects.length) return null;
+
+    const durationMs = firstNumber(objects, ["duration", "resourceDuration", "dt", "totalTime", "total"]);
+    const positionMs = firstNumber(objects, [
+      "currentTime",
+      "playTime",
+      "playedTime",
+      "currentPosition",
+      "currentMs",
+      "curTime",
+      "elapsed",
+      "progress"
+    ], durationMs);
+
+    if (!positionMs || !durationMs) return null;
+
+    const paused = pausedFromObject(objects[0]);
+    return {
+      positionMs,
+      durationMs,
+      paused,
+      pausedReliable: paused !== null,
+      progressSource: source,
+      songId: nativeSongId(objects),
+      title: firstText(objects, ["name", "title", "resourceName"]),
+      artist: nativeArtists(objects),
+      album: firstText(objects, ["albumName", "album"])
+    };
+  }
+
+  function summarizeNative(value) {
+    const objects = collectObjects(value).slice(0, 8);
+    return objects.map((object) => {
+      const summary = {};
+      for (const [key, rawValue] of Object.entries(object).slice(0, 24)) {
+        if (rawValue === null || rawValue === undefined) {
+          summary[key] = rawValue;
+        } else if (typeof rawValue === "object") {
+          summary[key] = Array.isArray(rawValue) ? `[array:${rawValue.length}]` : "[object]";
+        } else {
+          summary[key] = String(rawValue).slice(0, 120);
+        }
+      }
+      return summary;
+    });
+  }
+
+  async function callBetterNcmApi(name) {
+    const api = window.betterncm && window.betterncm.ncm;
+    if (!api || typeof api[name] !== "function") return null;
+    const value = api[name]();
+    return value && typeof value.then === "function" ? await value : value;
+  }
+
+  async function readBetterNcmProgress() {
+    const attempts = [];
+    for (const name of ["getPlaying", "getPlayingSong"]) {
+      try {
+        const value = await callBetterNcmApi(name);
+        attempts.push({
+          api: name,
+          capturedAt: Date.now(),
+          sample: summarizeNative(value)
+        });
+        lastNativeSnapshot = { capturedAt: Date.now(), attempts };
+        const progress = normalizeNativeProgress(value, `betterncm.ncm.${name}`);
+        if (progress) return progress;
+      } catch (error) {
+        attempts.push({
+          api: name,
+          capturedAt: Date.now(),
+          error: error.message
+        });
+        lastNativeSnapshot = { capturedAt: Date.now(), attempts };
+      }
+    }
+    return null;
+  }
+
   function readLocalStorageProgress() {
     const candidates = ["playingInfo", "lastPlaying"];
     for (const key of candidates) {
@@ -273,6 +411,7 @@
         lastPlaying: decodeStorageValue(localStorage.getItem("lastPlaying")),
         lyricStore: decodeStorageValue(localStorage.getItem("lyricStore"))
       },
+      nativeApi: lastNativeSnapshot,
       progressSource: progress ? progress.progressSource : "",
       capturedAt: Date.now()
     };
@@ -342,25 +481,31 @@
     }
   }
 
-  function tick() {
-    const progress = readAudioElement() || readDomClock() || readLocalStorageProgress();
-    sendHeartbeat(progress);
-    if (!progress) return;
-    const meta = readMeta();
-    const playback = inferPlayback(progress, meta);
-    sendState({
-      title: meta.title,
-      artist: meta.artist,
-      album: meta.album,
-      songId: progress.songId || meta.songId || "",
-      positionMs: progress.positionMs,
-      durationMs: progress.durationMs,
-      playbackStatus: playback.paused ? "Paused" : "Playing",
-      paused: playback.paused,
-      pausedReliable: playback.reliable,
-      progressSource: progress.progressSource,
-      capturedAt: Date.now()
-    });
+  async function tick() {
+    if (tickInFlight) return;
+    tickInFlight = true;
+    try {
+      const progress = readAudioElement() || await readBetterNcmProgress() || readDomClock() || readLocalStorageProgress();
+      sendHeartbeat(progress);
+      if (!progress) return;
+      const meta = readMeta();
+      const playback = inferPlayback(progress, meta);
+      sendState({
+        title: progress.title || meta.title,
+        artist: progress.artist || meta.artist,
+        album: progress.album || meta.album,
+        songId: progress.songId || meta.songId || "",
+        positionMs: progress.positionMs,
+        durationMs: progress.durationMs,
+        playbackStatus: playback.paused ? "Paused" : "Playing",
+        paused: playback.paused,
+        pausedReliable: playback.reliable,
+        progressSource: progress.progressSource,
+        capturedAt: Date.now()
+      });
+    } finally {
+      tickInFlight = false;
+    }
   }
 
   function start() {
